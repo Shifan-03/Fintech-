@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transaction Analysis | Sentinel Prime</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Geist:wght@600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-secondary-fixed": "#002113",
+                "on-secondary-container": "#00311f",
+                "on-secondary-fixed-variant": "#005236",
+                "surface": "#051424",
+                "secondary-container": "#00a572",
+                "primary-fixed": "#dae2fd",
+                "surface-variant": "#273647",
+                "primary-container": "#0f172a",
+                "primary": "#bec6e0",
+                "surface-bright": "#2c3a4c",
+                "inverse-surface": "#d4e4fa",
+                "tertiary-fixed": "#ffddb8",
+                "on-error-container": "#ffdad6",
+                "inverse-on-surface": "#233143",
+                "background": "#051424",
+                "surface-container": "#122131",
+                "outline": "#909097",
+                "tertiary-container": "#251400",
+                "on-tertiary-fixed-variant": "#653e00",
+                "error": "#ffb4ab",
+                "surface-container-low": "#0d1c2d",
+                "secondary-fixed-dim": "#4edea3",
+                "surface-container-lowest": "#010f1f",
+                "tertiary": "#ffb95f",
+                "on-error": "#690005",
+                "surface-container-highest": "#273647",
+                "on-tertiary-container": "#b47300",
+                "tertiary-fixed-dim": "#ffb95f",
+                "on-primary": "#283044",
+                "inverse-primary": "#565e74",
+                "error-container": "#93000a",
+                "secondary-fixed": "#6ffbbe",
+                "on-tertiary-fixed": "#2a1700",
+                "on-surface": "#d4e4fa",
+                "on-primary-container": "#798098",
+                "on-tertiary": "#472a00",
+                "on-background": "#d4e4fa",
+                "primary-fixed-dim": "#bec6e0",
+                "on-surface-variant": "#c6c6cd",
+                "outline-variant": "#45464d",
+                "secondary": "#4edea3",
+                "on-secondary": "#003824",
+                "surface-dim": "#051424",
+                "on-primary-fixed": "#131b2e",
+                "on-primary-fixed-variant": "#3f465c",
+                "surface-tint": "#bec6e0",
+                "surface-container-high": "#1c2b3c"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "stack-sm": "8px",
+                "stack-md": "16px",
+                "unit": "4px",
+                "container-padding": "24px",
+                "gutter": "16px"
+            },
+            "fontFamily": {
+                "headline-md": ["Geist"],
+                "body-md": ["Inter"],
+                "display-lg": ["Geist"],
+                "label-sm": ["Inter"],
+                "data-mono": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #051424;
+            color: #d4e4fa;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-glow-error {
+            box-shadow: 0px 0px 12px rgba(255, 180, 171, 0.2);
+        }
+        .chart-gradient {
+            background: linear-gradient(180deg, rgba(78, 222, 163, 0.1) 0%, rgba(78, 222, 163, 0) 100%);
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full w-60 bg-surface border-r border-outline-variant flex flex-col py-container-padding z-50">
+<div class="px-6 mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-secondary tracking-tight">Sentinel Prime</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mt-1 opacity-60">Fraud Ops v4.2</p>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 transition-colors duration-200 hover:bg-surface-variant hover:text-on-surface text-on-surface-variant font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined group-hover:text-secondary">dashboard</span>
+<span>Monitoring</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-colors duration-200 text-secondary font-bold border-r-2 border-secondary bg-surface-container-high font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+<span>Investigations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-colors duration-200 hover:bg-surface-variant hover:text-on-surface text-on-surface-variant font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined group-hover:text-secondary">rule</span>
+<span>Rules Engine</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-colors duration-200 hover:bg-surface-variant hover:text-on-surface text-on-surface-variant font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined group-hover:text-secondary">query_stats</span>
+<span>Analytics</span>
+</a>
+</nav>
+<div class="px-3 mb-6">
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-bold text-sm rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                New Investigation
+            </button>
+</div>
+<div class="px-3 border-t border-outline-variant pt-6 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 transition-colors duration-200 hover:bg-surface-variant hover:text-on-surface text-on-surface-variant font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 transition-colors duration-200 hover:bg-surface-variant hover:text-on-surface text-on-surface-variant font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="ml-60 flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center h-16 px-container-padding bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-40">
+<div class="flex items-center gap-8">
+<span class="font-data-mono text-data-mono tracking-tighter text-secondary font-bold">FRAUD_COMMAND</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Network Status</a>
+<a class="font-label-sm text-label-sm text-secondary border-b-2 border-secondary pb-1" href="#">Threat Intel</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 bg-on-secondary-container/20 px-3 py-1 rounded-full border border-secondary/30">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="text-secondary font-label-sm text-[10px] uppercase tracking-widest font-bold">System Healthy</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-secondary transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-secondary transition-colors">admin_panel_settings</span>
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a serious cyber security analyst in a dimly lit tech environment, with soft blue lighting reflecting off their face. The image has a professional and clinical cinematic feel, with a shallow depth of field focusing on the intense, observant eyes. The background contains blurred rows of server racks with blinking green indicators." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY1E0mMgdHW0Ug1cdYs0lkPAz4l_IK1HPnLrfRZsUGqgxQhRGZBQL0y7ghB2r2cVfWra_8AxFEr7mjTgqHRz2IqTn8Gw7c29MrTv6A9f1-YUdyeKSrnxF7CiAt41bVKBnAgzFzTh41kg6rsjvXnhKLfxBtA3L88z1QGisiWexaNVd9x7BT7_OftzzkF2bxCsXNEnQ_C48mCVzk741WDjXYLUPTeRtQ-8s7K3U1-QI0B_UhvVodbZ9001ogMhUMrdJHKqY9mMzHTJo"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<section class="flex-1 overflow-y-auto p-container-padding hide-scrollbar">
+<!-- Page Header / Breadcrumbs -->
+<div class="flex items-center justify-between mb-8">
+<div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span>Investigations</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-secondary">TXN-4902-88-ALPHA</span>
+</div>
+<h2 class="font-display-lg text-display-lg text-on-surface tracking-tight">Transaction Analysis</h2>
+</div>
+<div class="flex gap-stack-md">
+<button class="px-6 py-2 bg-surface-container-high border border-outline-variant text-on-surface font-label-sm text-label-sm rounded-lg flex items-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">download</span> Export PDF
+                    </button>
+<button class="px-6 py-2 bg-surface-container-high border border-outline-variant text-on-surface font-label-sm text-label-sm rounded-lg flex items-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">history</span> Case History
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Fraud Profile / ID Card -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<!-- Profile Summary Card -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4">
+<div class="bg-error-container text-error px-3 py-1 rounded border border-error/20 flex flex-col items-center custom-glow-error">
+<span class="text-[10px] font-bold uppercase tracking-tighter">Risk Score</span>
+<span class="font-data-mono text-xl font-bold">94.8</span>
+</div>
+</div>
+<div class="flex items-center gap-4 mb-6">
+<div class="w-16 h-16 rounded-full bg-surface-variant border-2 border-outline-variant p-1">
+<div class="w-full h-full rounded-full bg-surface overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl opacity-20">person</span>
+</div>
+</div>
+<div>
+<h3 class="font-headline-md text-lg text-on-surface">Anonymous User #8821</h3>
+<p class="font-data-mono text-xs text-on-surface-variant">ID: 8fa2-11ee-b962-0242ac120002</p>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-on-surface-variant font-label-sm text-xs">Flagged Amount</span>
+<span class="font-data-mono text-on-surface">$14,250.00 USD</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-on-surface-variant font-label-sm text-xs">Auth Method</span>
+<span class="px-2 py-0.5 bg-surface-variant rounded text-[10px] text-on-surface font-bold">3D SECURE (BYPASS ATTEMPT)</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-on-surface-variant font-label-sm text-xs">Velocity (24h)</span>
+<span class="text-error font-data-mono">14 TXNs / Hour</span>
+</div>
+</div>
+</div>
+<!-- Geolocation Map -->
+<div class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden h-80 flex flex-col">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Transaction Origin</span>
+<span class="font-data-mono text-xs text-secondary">Lagos, Nigeria</span>
+</div>
+<div class="flex-1 bg-surface-variant relative">
+<div class="absolute inset-0 bg-cover bg-center grayscale opacity-60 mix-blend-luminosity" data-location="Lagos, Nigeria" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZHA6sXsGDqhqOvI0ByeRKEg_qhTPlCXSKYaKIscDu-5NQ38P0Cq-Zjfa_uSqwkPV9Sn1nDpjXzP5txLpVTtESJ8jIYDyUtsXjKcvRNFskbRfZLcg6at3_RbOOKJjn_PNUWnrsnAze-Nz6PZ1FybfN2Te5P3QFNzZ-mc-Aflt4__5OrHE6iQINua27lqEJZQhWdfjpYPCZGg3WUfaxg6LVKs3t_AEcDjDqmewuAcqFgAfhcYfallPpw3Gse5VsdMY1Ae-JJtxbkSI')"></div>
+<!-- Map Overlay UI -->
+<div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+<div class="relative w-12 h-12">
+<div class="absolute inset-0 bg-error rounded-full animate-ping opacity-25"></div>
+<div class="absolute inset-2 bg-error rounded-full animate-pulse opacity-50"></div>
+<div class="absolute inset-4 bg-error rounded-full shadow-[0_0_15px_#ffb4ab]"></div>
+</div>
+</div>
+<div class="absolute bottom-4 left-4 right-4 bg-surface/80 backdrop-blur p-3 rounded border border-outline-variant flex gap-4 text-[10px]">
+<div class="flex-1">
+<p class="text-on-surface-variant uppercase font-bold">IP Address</p>
+<p class="text-on-surface font-data-mono">102.89.23.114</p>
+</div>
+<div class="flex-1">
+<p class="text-on-surface-variant uppercase font-bold">ASN</p>
+<p class="text-on-surface font-data-mono">AS37076 - MTN</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Central Analysis Canvas -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-gutter">
+<!-- Behavioral Anomaly Chart -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6 flex-1 flex flex-col min-h-[400px]">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">insights</span>
+                                Behavioral Deviation
+                            </h3>
+<div class="flex gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary-container"></span>
+<span class="w-3 h-3 rounded-full bg-outline-variant"></span>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-end gap-1 relative group">
+<!-- SVG Chart Simulation -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" preserveaspectratio="none" viewbox="0 0 400 200">
+<path d="M0,180 L40,170 L80,175 L120,80 L160,40 L200,60 L240,150 L280,160 L320,30 L360,10 L400,20" fill="none" stroke="#4edea3" stroke-width="2"></path>
+<path d="M0,180 L40,170 L80,175 L120,80 L160,40 L200,60 L240,150 L280,160 L320,30 L360,10 L400,20 V200 H0 Z" fill="url(#grad1)" opacity="0.1"></path>
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#4edea3;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#4edea3;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+<!-- Anomalous Zone Glow -->
+<rect fill="rgba(255, 180, 171, 0.05)" height="200" width="100" x="300" y="0"></rect>
+</svg>
+<!-- Legend / Details -->
+<div class="flex justify-between mt-4 font-data-mono text-[10px] text-on-surface-variant">
+<span>T-24H</span>
+<span>T-12H</span>
+<span>T-6H</span>
+<span class="text-error font-bold">DETECTED ANOMALY</span>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-outline-variant/30 grid grid-cols-2 gap-4">
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase mb-1">Typing Speed Deviation</p>
+<div class="flex items-center gap-2">
+<div class="h-1.5 flex-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-error w-[85%]"></div>
+</div>
+<span class="font-data-mono text-xs text-error">+240%</span>
+</div>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase mb-1">Navigation Pattern</p>
+<div class="flex items-center gap-2">
+<div class="h-1.5 flex-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[15%]"></div>
+</div>
+<span class="font-data-mono text-xs text-on-surface">NON-LINEAR</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Device Fingerprint -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">fingerprint</span>
+                                Device Fingerprint
+                            </h3>
+<span class="px-2 py-0.5 bg-surface-variant text-[10px] text-error font-bold rounded">EMULATOR DETECTED</span>
+</div>
+<div class="grid grid-cols-2 gap-y-4 gap-x-8">
+<div class="space-y-1">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">OS / Version</p>
+<p class="font-data-mono text-sm">Android 12 (Virtualized)</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Browser</p>
+<p class="font-data-mono text-sm">Chrome 114.0.0.0</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Screen Res</p>
+<p class="font-data-mono text-sm">1080 x 2400 (3.0x)</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">WebGL Vendor</p>
+<p class="font-data-mono text-sm text-error">Google SwiftShader</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Resolution Panel (Trailing Action Sidebar) -->
+<div class="col-span-12 lg:col-span-3 flex flex-col gap-gutter">
+<div class="bg-surface-container-high border border-secondary/30 rounded-xl p-6 h-full flex flex-col sticky top-4">
+<div class="mb-8">
+<h3 class="font-headline-md text-lg text-on-surface mb-2">Resolution</h3>
+<p class="font-body-md text-xs text-on-surface-variant">Recommended action based on 12 flagged signals.</p>
+</div>
+<div class="space-y-stack-md flex-1">
+<div class="p-4 bg-surface border border-outline-variant rounded-lg flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[10px] text-on-surface-variant uppercase font-bold">Signal Summary</span>
+<span class="text-error material-symbols-outlined text-lg">report</span>
+</div>
+<ul class="space-y-2">
+<li class="flex items-start gap-2 text-[11px]">
+<span class="material-symbols-outlined text-xs text-error mt-0.5">circle</span>
+<span>Proxy/VPN mismatch detected.</span>
+</li>
+<li class="flex items-start gap-2 text-[11px]">
+<span class="material-symbols-outlined text-xs text-error mt-0.5">circle</span>
+<span>Device hardware inconsistent with reported OS.</span>
+</li>
+<li class="flex items-start gap-2 text-[11px]">
+<span class="material-symbols-outlined text-xs text-on-surface-variant mt-0.5">circle</span>
+<span>User failed 2/3 behavioral checks.</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="mt-8 space-y-3">
+<button class="w-full py-4 bg-error text-on-error font-bold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-error/10">
+<span class="material-symbols-outlined">block</span>
+                                Mark as Fraud
+                            </button>
+<button class="w-full py-3 bg-surface-variant text-on-surface font-bold rounded-lg flex items-center justify-center gap-2 hover:bg-outline-variant active:scale-95 transition-all border border-outline">
+<span class="material-symbols-outlined">id_card</span>
+                                Request KYC
+                            </button>
+<button class="w-full py-3 bg-transparent text-secondary font-bold rounded-lg flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all border border-secondary/30">
+<span class="material-symbols-outlined">check_circle</span>
+                                Release Funds
+                            </button>
+</div>
+<div class="mt-6">
+<label class="block font-label-sm text-[10px] text-on-surface-variant uppercase font-bold mb-2">Resolution Note</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded p-3 text-xs text-on-surface focus:ring-1 focus:ring-secondary focus:border-secondary outline-none h-24 resize-none" placeholder="Enter justification for action..."></textarea>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Data Detail Table -->
+<div class="mt-gutter bg-surface-container border border-outline-variant rounded-xl overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Raw Payload Data</h3>
+<button class="text-secondary text-xs hover:underline">View Full JSON</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs border-collapse">
+<thead>
+<tr class="bg-surface-container-highest/50 text-on-surface-variant font-bold uppercase tracking-wider">
+<th class="px-6 py-3 border-b border-outline-variant">Parameter</th>
+<th class="px-6 py-3 border-b border-outline-variant">Value</th>
+<th class="px-6 py-3 border-b border-outline-variant">Standard Range</th>
+<th class="px-6 py-3 border-b border-outline-variant">Status</th>
+</tr>
+</thead>
+<tbody class="font-data-mono divide-y divide-outline-variant/30">
+<tr>
+<td class="px-6 py-4 text-on-surface">tcp_fingerprint</td>
+<td class="px-6 py-4">0x4E9281A</td>
+<td class="px-6 py-4 text-on-surface-variant">--</td>
+<td class="px-6 py-4"><span class="text-secondary">VALID</span></td>
+</tr>
+<tr class="bg-surface-container-low/30">
+<td class="px-6 py-4 text-on-surface">latency_jitter</td>
+<td class="px-6 py-4">420ms</td>
+<td class="px-6 py-4 text-on-surface-variant">&lt; 50ms</td>
+<td class="px-6 py-4"><span class="text-error">ANOMALY</span></td>
+</tr>
+<tr>
+<td class="px-6 py-4 text-on-surface">canvas_render_hash</td>
+<td class="px-6 py-4">ae12..ff34</td>
+<td class="px-6 py-4 text-on-surface-variant">Browser Standard</td>
+<td class="px-6 py-4"><span class="text-error">NON-STANDARD</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+<!-- Visual Polish: Scanner Effect -->
+<div class="fixed pointer-events-none inset-0 border-[20px] border-secondary/5 opacity-50 z-[100]"></div>
+<script>
+        // Simple micro-interaction for the resolution buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.add('opacity-70');
+                setTimeout(() => this.classList.remove('opacity-70'), 200);
+            });
+        });
+
+        // Atmospheric scanline effect for that command center feel
+        const main = document.querySelector('main');
+        const scanline = document.createElement('div');
+        scanline.style.position = 'fixed';
+        scanline.style.top = '0';
+        scanline.style.left = '0';
+        scanline.style.width = '100%';
+        scanline.style.height = '100px';
+        scanline.style.background = 'linear-gradient(to bottom, transparent, rgba(78, 222, 163, 0.03), transparent)';
+        scanline.style.pointerEvents = 'none';
+        scanline.style.zIndex = '99';
+        scanline.style.animation = 'scan 8s linear infinite';
+        document.body.appendChild(scanline);
+
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes scan {
+                0% { transform: translateY(-100%); }
+                100% { transform: translateY(100vh); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>
